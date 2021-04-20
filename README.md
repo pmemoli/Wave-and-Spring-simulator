@@ -13,5 +13,5 @@ y click medio (la ruedita) para crear una masa que no se mueve. ENTER empieza/pa
 Presionar Q permite cambiar las propiedades fisicas de los proximos objetos. Una vez creados estas
 propiedades permanecen, de forma que se pueden combinar masas y resortes distintos.
 
-TODO: 
+TODO (Some time in the future): 
 Be clear about units. Add the possibility of perfectly elastic collisions and gravity. 
