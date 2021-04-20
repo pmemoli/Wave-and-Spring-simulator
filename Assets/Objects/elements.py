@@ -8,12 +8,12 @@ black = (0, 0, 0)
 white = (255, 255, 255)
 
 class Particle(pygame.sprite.Sprite):
-    def __init__(self, center):
+    def __init__(self, center, mass):
         super().__init__()
 
         # Useful attributes
         radius = 7
-        self.mass = 5
+        self.mass = int(mass)
         self.center = center
         self.acceleration = np.array([0, 0])
         self.speed = np.array([0, 0])
@@ -40,14 +40,13 @@ class Particle(pygame.sprite.Sprite):
 
 
 
-
 class Block(pygame.sprite.Sprite):
     def __init__(self, center):
         super().__init__()
 
         # Useful attributes
         radius = 7
-        self.mass = 10000000000000000000000000000
+        self.mass = 10000000000000000000000000000  # Virtually unmovable
         self.center = center
         self.acceleration = np.array([0, 0])
         self.speed = np.array([0, 0])
@@ -74,10 +73,11 @@ class Block(pygame.sprite.Sprite):
 
 
 class Spring(pygame.sprite.Sprite):
-    def __init__(self, node1, node2, k):
+    def __init__(self, node1, node2, k, lo):
         super().__init__()
 
-        self.k = k
+        self.k = int(k)
+        self.lo = int(lo)
 
         self.node1 = node1
         self.node2 = node2
@@ -87,7 +87,6 @@ class Spring(pygame.sprite.Sprite):
 
         width = abs(node1_position[0] - node2_position[0])
         height = abs(node1_position[1] - node2_position[1])
-
 
         self.image = pygame.Surface([width, height], pygame.SRCALPHA, 32)
         self.image = self.image.convert_alpha()
@@ -104,7 +103,15 @@ class Spring(pygame.sprite.Sprite):
         node1_position = np.asarray(self.node1.center)
         node2_position = np.asarray(self.node2.center)
 
-        force = -self.k * np.subtract(node1_position, node2_position)  # Force applied to node 1, node 2 recieves the opposite force.
+        distance_vector = np.subtract(node1_position, node2_position)
+        distance_magnitude = np.linalg.norm(distance_vector)
+
+        if self.lo == 0:
+            force = -self.k * distance_vector  # Force applied to node 1, node 2 recieves the opposite force.
+        else:
+            force_magnitude = -self.k * (distance_magnitude - self.lo)
+            force_direction = distance_vector / distance_magnitude
+            force = force_magnitude * force_direction
 
         return force
 
@@ -152,6 +159,3 @@ class Spring(pygame.sprite.Sprite):
                 end = (width, height)
 
         return start, end
-
-
-

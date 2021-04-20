@@ -3,14 +3,17 @@ sys.path.insert(0, './Assets/Objects')
 from elements import *
 from ui import *
 
-
 def draw_line(start, end):
     pygame.draw.line(screen, (255, 255, 255), start, end, 4)
-
 
 class GameManger:
     def __init__(self):
         self.state = "set up"
+        
+        # Physical variables
+        self.mass = 5
+        self.k = 6
+        self.lo = 0
 
 
     def state_manager(self):
@@ -31,7 +34,7 @@ class GameManger:
             # Item placement with mouse
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    new_particle = Particle(pygame.mouse.get_pos())
+                    new_particle = Particle(pygame.mouse.get_pos(), self.mass)
                     particle_group.add(new_particle)
                 
                 elif event.button == 3:
@@ -62,13 +65,12 @@ class GameManger:
 
                 # Open Settings pop up
                 if event.key == pygame.K_q:
-                    pass
-
-
+                    settings.create()
+                    settings.run()
+                    self.mass, self.k, self.lo = settings.mass, settings.k, settings.lo
 
         particle_group.draw(screen)
         spring_group.draw(screen)
-
 
 
     def connect_spring(self, particle_1):
@@ -84,13 +86,13 @@ class GameManger:
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     for particle_2 in particle_group:
                         if particle_2.rect.collidepoint(pygame.mouse.get_pos()):
-                            new_spring = Spring(particle_1, particle_2, 5)
+                            new_spring = Spring(particle_1, particle_2, self.k, self.lo)
                             spring_group.add(new_spring)
                             connected = True
 
                     for particle_2 in wall_group:
                         if particle_2.rect.collidepoint(pygame.mouse.get_pos()):
-                            new_spring = Block(particle_1, particle_2, 5)
+                            new_spring = Block(particle_1, particle_2, self.k, self.lo)
                             spring_group.add(new_spring)
                             connected = True
 
@@ -130,10 +132,6 @@ class GameManger:
         spring_group.update()
 
 
-    def settings(self):
-        pass
-
-
 # General setup
 pygame.init()
 clock = pygame.time.Clock()
@@ -155,6 +153,7 @@ wall_group = pygame.sprite.Group()
 
 game = GameManger()
 instructions = Instructions()
+settings = Settings()
 
 while True:
     # drawing
