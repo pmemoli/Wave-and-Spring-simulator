@@ -4,9 +4,9 @@ Set any spring-mass configuration on a 2D plane and see how it evolves.
 Instructions / Instrucciones:
 
 Press right click to set a mass, left click to connect two masses with a spring, 
-left click + R to create a rod approximation and middle click to create an "unmovable" mass
+left click + R to create a rod approximation and middle click to create an "unmovable" mass.
 ENTER starts/pauses the simulation. BACKSPACE deletes current configuration.
-Press Q to set the physical properties for the next mass and/or string. Once created the properties remain
+Press Q to set the physical properties for the next mass and/or string. Once created the properties remain, 
 so concatenation of different masses and springs is possible. Press G to turn gravity ON/OFF
 
 Presionar click derecho para crear una masa, click izquierdo para conectar dos masas con un resorte,
