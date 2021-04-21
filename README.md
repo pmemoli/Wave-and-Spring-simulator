@@ -16,4 +16,5 @@ de los proximos objetos. Una vez creados estas propiedades permanecen, de forma 
 masas y resortes distintos. La G activa o desactiva la gravedad.
 
 TODO (Some time in the future): 
-Change the position of the masses during the "prepare" menu. Save configurations.
+Change the position of the masses during the "prepare" menu. Save configurations. Add rod approximation 
+(spring with "huge" constant always at the natural length) to allow for pendulum simulations.
