@@ -15,7 +15,8 @@ ENTER empieza/pausa la simulacion. Se puede borrar la configuracion con BACKSPAC
 las propiedades fisicas de los proximos objetos. Una vez creados estas propiedades permanecen, de forma que se pueden combinar
 masas y resortes distintos. La G activa o desactiva la gravedad.
 
-Rod approximation: k ~ 10000 and initial length = natural length
+Rod approximation: k ~ 10000 and initial length = natural length.
+
 Unmovable mass: m ~ 10000kg
 
 TODO (Some time in the future): 
