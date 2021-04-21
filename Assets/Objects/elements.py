@@ -27,7 +27,11 @@ class Particle(pygame.sprite.Sprite):
         self.rect.center = self.center
 
 
-    def update(self):
+    def update(self, gravity=False):
+        # Takes gravity
+        if gravity:
+            self.apply_force(np.array([0, 400]))
+
         center = np.asarray(self.center)
         new_center = np.add(center, self.speed * delta_time)  # Metodo de euler
         self.rect.center = tuple(new_center)
@@ -40,7 +44,7 @@ class Particle(pygame.sprite.Sprite):
 
 
 
-class Block(pygame.sprite.Sprite):
+class Block(pygame.sprite.Sprite): # TODO: Eliminar el calculo de fuerzas para el bloque
     def __init__(self, center):
         super().__init__()
 
@@ -59,7 +63,7 @@ class Block(pygame.sprite.Sprite):
         self.rect.center = self.center
 
 
-    def update(self):
+    def update(self, gravity=False):
         center = np.asarray(self.center)
         new_center = np.add(center, self.speed * delta_time)  # Esta mal la fisica
         self.rect.center = tuple(new_center)

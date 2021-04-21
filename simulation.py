@@ -16,6 +16,9 @@ class GameManger:
         self.lo = 0
         self.initial_velocity = [0, 0]
 
+        self.gravity = False
+        self.gravity_img = gravity_off
+
 
     def state_manager(self):
         if self.state == "set up":
@@ -69,6 +72,16 @@ class GameManger:
                     self.mass, self.k, self.lo = settings.mass, settings.k, settings.lo
                     self.initial_velocity = [settings.initial_velocity_x, settings.initial_velocity_y]
 
+                # Turn gravity ON/OFF
+                if event.key == pygame.K_g:
+                    self.gravity = not self.gravity
+
+                    if self.gravity:
+                        self.gravity_img = gravity_on
+                    else:
+                        self.gravity_img = gravity_off
+
+        screen.blit(self.gravity_img, (440, 540))
 
         particle_group.draw(screen)
         spring_group.draw(screen)
@@ -104,6 +117,8 @@ class GameManger:
             screen.fill(black)
             screen.blit(ui, (0, 0))
             screen.blit(unit, (40, 540))
+            screen.blit(self.gravity_img, (440, 540))
+
 
             draw_line(particle_1.rect.center, pygame.mouse.get_pos())
             
@@ -127,11 +142,12 @@ class GameManger:
         screen.fill(black)
         screen.blit(ui, (0, 0))
         screen.blit(unit, (40, 540))
+        screen.blit(self.gravity_img, (440, 540))
 
         particle_group.draw(screen)
         spring_group.draw(screen)
 
-        particle_group.update()
+        particle_group.update(self.gravity)
         spring_group.update()
 
 
@@ -139,11 +155,14 @@ class GameManger:
 pygame.init()
 clock = pygame.time.Clock()
 
+# Images and variables
 black = (0, 0, 0)
 white = (255, 255, 255)
 
 ui = pygame.image.load(".\\Assets\\ui.png")
 unit = pygame.image.load(".\\Assets\\unit.png")
+gravity_off = pygame.image.load(".\\Assets\\g_off.png")
+gravity_on = pygame.image.load(".\\Assets\\g_on.png")
 
 # Game screen
 screen_width = 600
