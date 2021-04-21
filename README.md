@@ -14,4 +14,5 @@ Presionar Q permite cambiar las propiedades fisicas de los proximos objetos. Una
 propiedades permanecen, de forma que se pueden combinar masas y resortes distintos.
 
 TODO (Some time in the future): 
-Be clear about units. Add the possibility of perfectly elastic collisions and gravity. 
+Add the possibility of perfectly elastic collisions and gravity. Change the position of the masses
+during the "prepare" menu. Save configurations.
