@@ -1,6 +1,8 @@
 # Spring-Simulator
 Set any spring-mass configuration on a 2D plane and see how it evolves. 
 
+Pygame and Numpy required
+
 Instructions / Instrucciones:
 
 Press left click to set a mass, right click to connect two masses with a spring, 
