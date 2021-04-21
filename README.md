@@ -15,4 +15,4 @@ propiedades permanecen, de forma que se pueden combinar masas y resortes distint
 
 TODO (Some time in the future): 
 Add the possibility of perfectly elastic collisions and gravity. Change the position of the masses
-during the "prepare" menu. Save configurations.
+during the "prepare" menu. Save configurations. Set initial velocity for masses.
