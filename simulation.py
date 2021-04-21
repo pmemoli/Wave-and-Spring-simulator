@@ -46,7 +46,6 @@ class GameManger:
                     new_particle = Block(pygame.mouse.get_pos())
                     particle_group.add(new_particle)
 
-
             if event.type == pygame.KEYDOWN:
                 # Run simulation
                 if event.key == pygame.K_RETURN:
@@ -71,7 +70,7 @@ class GameManger:
 
         particle_group.draw(screen)
         spring_group.draw(screen)
-
+        
 
     def connect_spring(self, particle_1):
         
@@ -96,12 +95,12 @@ class GameManger:
                             spring_group.add(new_spring)
                             connected = True
 
-
                     connected = True
 
             # drawing
             screen.fill(black)
             screen.blit(ui, (0, 0))
+            screen.blit(unit, (40, 550))
 
             draw_line(particle_1.rect.center, pygame.mouse.get_pos())
             
@@ -124,6 +123,7 @@ class GameManger:
         # drawing
         screen.fill(black)
         screen.blit(ui, (0, 0))
+        screen.blit(unit, (40, 550))
 
         particle_group.draw(screen)
         spring_group.draw(screen)
@@ -140,6 +140,7 @@ black = (0, 0, 0)
 white = (255, 255, 255)
 
 ui = pygame.image.load(".\\Assets\\ui.png")
+unit = pygame.image.load(".\\Assets\\unit.png")
 
 # Game screen
 screen_width = 600
@@ -159,6 +160,7 @@ while True:
     # drawing
     screen.fill(black)
     screen.blit(ui, (0, 0))
+    screen.blit(unit, (40, 550))
 
     # Selecting proper game state
     game.state_manager()

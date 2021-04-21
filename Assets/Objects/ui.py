@@ -1,6 +1,5 @@
 from tkinter import *
 
-
 instructions = """
 En:
 Press right click to set a mass, left click to connect two masses with a spring
@@ -13,8 +12,9 @@ Presionar click derecho para crear una masa, click izquierdo para conectar dos m
 y click medio (la ruedita) para crear una masa que no se mueve. ENTER empieza/pausa la simulacion.
 Presionar Q permite cambiar las propiedades fisicas de los proximos objetos. Una vez creados estas
 propiedades permanecen, de forma que se pueden combinar masas y resortes distintos.
-"""
 
+40 Pixels = 1 Meter
+"""
 
 class Instructions:
 	def __init__(self):
@@ -45,12 +45,12 @@ class Settings:
 
 	def create(self):
 		self.root = Tk()
-		settings_frame = LabelFrame(self.root, text="Settings")
+		settings_frame = LabelFrame(self.root, text="Properties for next objects")
 		
-		mass_label = Label(settings_frame, text='Mass: ')
+		mass_label = Label(settings_frame, text='Mass (Kg): ')
 		mass_input = Entry(settings_frame, borderwidth = 3)
 		
-		lo_label = Label(settings_frame, text='Natural Length: ')
+		lo_label = Label(settings_frame, text='Natural Length (Pixels): ')
 		lo_input = Entry(settings_frame, borderwidth = 3)
 
 		k_label = Label(settings_frame, text='Spring Constant: ')
