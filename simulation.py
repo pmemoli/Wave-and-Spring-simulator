@@ -14,6 +14,7 @@ class GameManger:
         self.mass = 5
         self.k = 6
         self.lo = 0
+        self.initial_velocity = [0, 0]
 
 
     def state_manager(self):
@@ -21,8 +22,6 @@ class GameManger:
             self.prepare()
         elif self.state == "run":
             self.run()
-        elif self.state == "settings":
-            self.instructions()
 
 
     def prepare(self):
@@ -34,7 +33,7 @@ class GameManger:
             # Item placement with mouse
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    new_particle = Particle(pygame.mouse.get_pos(), self.mass)
+                    new_particle = Particle(pygame.mouse.get_pos(), self.mass, self.initial_velocity)
                     particle_group.add(new_particle)
                 
                 elif event.button == 3:
@@ -45,6 +44,7 @@ class GameManger:
                 elif event.button == 2:
                     new_particle = Block(pygame.mouse.get_pos())
                     particle_group.add(new_particle)
+
 
             if event.type == pygame.KEYDOWN:
                 # Run simulation
@@ -67,10 +67,12 @@ class GameManger:
                     settings.create()
                     settings.run()
                     self.mass, self.k, self.lo = settings.mass, settings.k, settings.lo
+                    self.initial_velocity = [settings.initial_velocity_x, settings.initial_velocity_y]
+
 
         particle_group.draw(screen)
         spring_group.draw(screen)
-        
+
 
     def connect_spring(self, particle_1):
         
@@ -95,12 +97,13 @@ class GameManger:
                             spring_group.add(new_spring)
                             connected = True
 
+
                     connected = True
 
             # drawing
             screen.fill(black)
             screen.blit(ui, (0, 0))
-            screen.blit(unit, (40, 550))
+            screen.blit(unit, (40, 540))
 
             draw_line(particle_1.rect.center, pygame.mouse.get_pos())
             
@@ -123,7 +126,7 @@ class GameManger:
         # drawing
         screen.fill(black)
         screen.blit(ui, (0, 0))
-        screen.blit(unit, (40, 550))
+        screen.blit(unit, (40, 540))
 
         particle_group.draw(screen)
         spring_group.draw(screen)
@@ -160,7 +163,7 @@ while True:
     # drawing
     screen.fill(black)
     screen.blit(ui, (0, 0))
-    screen.blit(unit, (40, 550))
+    screen.blit(unit, (40, 540))
 
     # Selecting proper game state
     game.state_manager()

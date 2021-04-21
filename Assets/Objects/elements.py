@@ -8,7 +8,7 @@ black = (0, 0, 0)
 white = (255, 255, 255)
 
 class Particle(pygame.sprite.Sprite):
-    def __init__(self, center, mass):
+    def __init__(self, center, mass, velocity=[0, 0]):
         super().__init__()
 
         # Useful attributes
@@ -16,7 +16,7 @@ class Particle(pygame.sprite.Sprite):
         self.mass = int(mass)
         self.center = center
         self.acceleration = np.array([0, 0])
-        self.speed = np.array([0, 0])
+        self.speed = np.array(velocity)
 
         # Drawing cirlce
         self.image = pygame.Surface([radius * 2, radius * 2], pygame.SRCALPHA, 32)
