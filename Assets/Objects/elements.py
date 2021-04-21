@@ -77,7 +77,7 @@ class Block(pygame.sprite.Sprite): # TODO: Eliminar el calculo de fuerzas para e
 
 
 class Spring(pygame.sprite.Sprite):
-    def __init__(self, node1, node2, k, lo):
+    def __init__(self, node1, node2, k, lo, color=white):
         super().__init__()
 
         self.k = int(k)
@@ -85,6 +85,8 @@ class Spring(pygame.sprite.Sprite):
 
         self.node1 = node1
         self.node2 = node2
+
+        self.color = color
 
         # Drawing cirlce
         node1_position, node2_position = np.asarray(self.node1.rect.center), np.asarray(self.node2.rect.center)
@@ -97,7 +99,7 @@ class Spring(pygame.sprite.Sprite):
 
         start, end = self.line_positions(node1_position, node2_position, width, height)
 
-        pygame.draw.line(self.image, white, start, end, 4)
+        pygame.draw.line(self.image, self.color, start, end, 4)
 
         self.rect = self.image.get_rect()
         self.rect.center = np.add(node1_position, node2_position) / 2
@@ -137,7 +139,7 @@ class Spring(pygame.sprite.Sprite):
 
         start, end = self.line_positions(node1_position, node2_position, width, height)
 
-        pygame.draw.line(self.image, white, start, end, 4)
+        pygame.draw.line(self.image, self.color, start, end, 4)
 
         self.rect = self.image.get_rect()
         self.rect.center = np.add(node1_position, node2_position) / 2

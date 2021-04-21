@@ -2,9 +2,10 @@ import pygame, sys
 sys.path.insert(0, './Assets/Objects')
 from elements import *
 from ui import *
+import numpy as np
 
-def draw_line(start, end):
-    pygame.draw.line(screen, (255, 255, 255), start, end, 4)
+def draw_line(start, end, color):
+    pygame.draw.line(screen, color, start, end, 4)
 
 class GameManger:
     def __init__(self):
@@ -28,6 +29,8 @@ class GameManger:
 
 
     def prepare(self):
+        pressing_r = pygame.key.get_pressed()[pygame.K_r]
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -35,15 +38,18 @@ class GameManger:
 
             # Item placement with mouse
             if event.type == pygame.MOUSEBUTTONDOWN:
+                # Creates a particle
                 if event.button == 1:
                     new_particle = Particle(pygame.mouse.get_pos(), self.mass, self.initial_velocity)
                     particle_group.add(new_particle)
                 
+                # Links particles with a spring or rod
                 elif event.button == 3:
                     for particle in particle_group:
                         if particle.rect.collidepoint(pygame.mouse.get_pos()):
-                            self.connect_spring(particle)
+                            self.connect_spring(particle, pressing_r)
 
+                # Creates an unmovable particle
                 elif event.button == 2:
                     new_particle = Block(pygame.mouse.get_pos())
                     particle_group.add(new_particle)
@@ -83,11 +89,11 @@ class GameManger:
 
         screen.blit(self.gravity_img, (440, 540))
 
-        particle_group.draw(screen)
         spring_group.draw(screen)
+        particle_group.draw(screen)
 
 
-    def connect_spring(self, particle_1):
+    def connect_spring(self, particle_1, rod_mode=True):
         
         connected = False
 
@@ -100,16 +106,14 @@ class GameManger:
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     for particle_2 in particle_group:
                         if particle_2.rect.collidepoint(pygame.mouse.get_pos()):
-                            new_spring = Spring(particle_1, particle_2, self.k, self.lo)
+                            if rod_mode:
+                                difference = np.linalg.norm(np.subtract(np.asarray(particle_1.center), np.asarray(particle_2.center)))
+                                new_spring = Spring(particle_1, particle_2, 10000, difference, gray)
+                            else:
+                                new_spring = Spring(particle_1, particle_2, self.k, self.lo)
+
                             spring_group.add(new_spring)
                             connected = True
-
-                    for particle_2 in wall_group:
-                        if particle_2.rect.collidepoint(pygame.mouse.get_pos()):
-                            new_spring = Block(particle_1, particle_2, self.k, self.lo)
-                            spring_group.add(new_spring)
-                            connected = True
-
 
                     connected = True
 
@@ -119,11 +123,15 @@ class GameManger:
             screen.blit(unit, (40, 540))
             screen.blit(self.gravity_img, (440, 540))
 
+            if rod_mode:
+                line_color = gray
+            else:
+                line_color = white
 
-            draw_line(particle_1.rect.center, pygame.mouse.get_pos())
+            draw_line(particle_1.rect.center, pygame.mouse.get_pos(), line_color)
             
-            particle_group.draw(screen)
             spring_group.draw(screen)
+            particle_group.draw(screen)
 
             pygame.display.update()
             clock.tick(60)
@@ -144,8 +152,8 @@ class GameManger:
         screen.blit(unit, (40, 540))
         screen.blit(self.gravity_img, (440, 540))
 
-        particle_group.draw(screen)
         spring_group.draw(screen)
+        particle_group.draw(screen)
 
         particle_group.update(self.gravity)
         spring_group.update()
@@ -158,6 +166,7 @@ clock = pygame.time.Clock()
 # Images and variables
 black = (0, 0, 0)
 white = (255, 255, 255)
+gray = (93, 93, 93)
 
 ui = pygame.image.load(".\\Assets\\ui.png")
 unit = pygame.image.load(".\\Assets\\unit.png")
