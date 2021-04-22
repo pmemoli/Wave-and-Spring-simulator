@@ -22,4 +22,4 @@ Rod approximation: k ~ 10000 and initial length = natural length.
 Unmovable mass: m ~ 10000000000000000000000000000kg
 
 TODO: 
-Allow for mass/spring deleting during the "prepare" menu. Save configurations.
+Allow for mass/spring deleting during the "prepare" menu (Ctrl + Z).
