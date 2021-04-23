@@ -29,6 +29,8 @@ class GameManger:
 
 
     def prepare(self):
+        global particle_group, spring_group, last_object
+
         pressing_r = pygame.key.get_pressed()[pygame.K_r]
         
         for event in pygame.event.get():
@@ -42,18 +44,21 @@ class GameManger:
                 if event.button == 1:
                     new_particle = Particle(pygame.mouse.get_pos(), self.mass, self.initial_velocity)
                     particle_group.add(new_particle)
-                
+                    last_object.append('particle')
+
                 # Links particles with a spring or rod
                 elif event.button == 3:
                     for particle in particle_group:
                         if particle.rect.collidepoint(pygame.mouse.get_pos()):
                             self.connect_spring(particle, pressing_r)
 
+                    last_object.append('spring')
+
                 # Creates an unmovable particle
                 elif event.button == 2:
                     new_particle = Block(pygame.mouse.get_pos())
                     particle_group.add(new_particle)
-
+                    last_object.append('particle')
 
             if event.type == pygame.KEYDOWN:
                 # Run simulation
@@ -86,6 +91,16 @@ class GameManger:
                         self.gravity_img = gravity_on
                     else:
                         self.gravity_img = gravity_off
+
+                if event.key == pygame.K_z and last_object[-1] is not None:
+                    if last_object[-1] == 'particle':
+                        particle_group.remove(particle_group.sprites()[-1])
+                        last_object.pop()
+
+                    elif last_object[-1] == 'spring':
+                        spring_group.remove(spring_group.sprites()[-1])
+                        last_object.pop()
+
 
         screen.blit(self.gravity_img, (440, 540))
 
@@ -172,6 +187,8 @@ ui = pygame.image.load(".\\Assets\\ui.png")
 unit = pygame.image.load(".\\Assets\\unit.png")
 gravity_off = pygame.image.load(".\\Assets\\g_off.png")
 gravity_on = pygame.image.load(".\\Assets\\g_on.png")
+
+last_object = [None]
 
 # Game screen
 screen_width = 600
