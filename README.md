@@ -1,10 +1,4 @@
 # Spring-Simulator
-Eng:
-Simulate any configuration of springs, particles, pendulums and waves.
+Set any configuration of springs, particles, pendulums and waves on a 2D plane and see how it evolves.
 
 Pygame and Numpy required
-
-Esp:
-Simula cualquier configuracion de resortes, particulas, pendulos y ondas.
-
-Requiere Pygame y Numpy
