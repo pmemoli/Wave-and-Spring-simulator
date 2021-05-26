@@ -1,218 +1,255 @@
 import pygame, sys
+import numpy as np
 sys.path.insert(0, './Assets/Objects')
 from elements import *
-from ui import *
-import numpy as np
+from utilities import *
 
-def draw_line(start, end, color):
-    pygame.draw.line(screen, color, start, end, 4)
-
-class GameManger:
+class GameManager:
     def __init__(self):
+        # State variables
         self.state = "set up"
-        
-        # Physical variables
-        self.mass = 5
-        self.k = 6
-        self.lo = 0
-        self.initial_velocity = [0, 0]
+        self.running = False
+        self.show_instructions = False
+        self.instructions_position = 600
 
+        # General physical variables
+        self.pixel_meter_ratio = 1/30  # meter/pixel
         self.gravity = False
-        self.gravity_img = gravity_off
 
+        # String physical variables
+        self.string_mass = 200  # kg (string mass needs to be higher than the object amount)
+        self.objects_in_string = 180
+        self.density = self.string_mass / self.objects_in_string
+        self.initial_tension = 200  # N
 
-    def state_manager(self):
-        if self.state == "set up":
-            self.prepare()
-        elif self.state == "run":
-            self.run()
+        self.string_points = []
+        self.blocks = []
+        self.drawing_string = False
+        self.string_drawn = False
 
+        # Mass-Spring discrete physical variables
+        self.mass = 4
+        self.spring_constant = 4
+        self.setting_spring = False
+        self.spring_particle = None
 
-    def prepare(self):
-        global particle_group, spring_group, last_object
+    def game_loop(self):
+        # Drawing string
+        self.draw_spring_logic()
 
-        pressing_r = pygame.key.get_pressed()[pygame.K_r]
-        
+        # Drawing spring
+        if self.setting_spring:
+            self.set_spring()
+
+        # Draw states status (run and gravity)
+        self.draw_states()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
 
-            # Item placement with mouse
             if event.type == pygame.MOUSEBUTTONDOWN:
-                # Creates a particle
-                if event.button == 1:
-                    new_particle = Particle(pygame.mouse.get_pos(), self.mass, self.initial_velocity)
-                    particle_group.add(new_particle)
-                    last_object.append('particle')
-
-                # Links particles with a spring or rod
-                elif event.button == 3:
-                    for particle in particle_group:
-                        if particle.rect.collidepoint(pygame.mouse.get_pos()):
-                            self.connect_spring(particle, pressing_r)
-
-                    last_object.append('spring')
-
-                # Creates an unmovable particle
-                elif event.button == 2:
-                    new_particle = Block(pygame.mouse.get_pos())
-                    particle_group.add(new_particle)
-                    last_object.append('particle')
+                self.object_creation_management(event)
 
             if event.type == pygame.KEYDOWN:
-                # Run simulation
-                if event.key == pygame.K_RETURN:
-                    self.state = "run"
-
-                # Delete all current physics objects
-                if event.key == pygame.K_BACKSPACE:
-                    particle_group.empty()
-                    spring_group.empty()
-                    wall_group.empty()
-
-                # Open Instructions pop up
-                if event.key == pygame.K_i:
-                    instructions.create()
-                    instructions.run()
-
-                # Open Settings pop up
-                if event.key == pygame.K_q:
-                    settings.create()
-                    settings.run()
-                    self.mass, self.k, self.lo = settings.mass, settings.k, settings.lo
-                    self.initial_velocity = [settings.initial_velocity_x, settings.initial_velocity_y]
-
-                # Turn gravity ON/OFF
-                if event.key == pygame.K_g:
-                    self.gravity = not self.gravity
-
-                    if self.gravity:
-                        self.gravity_img = gravity_on
-                    else:
-                        self.gravity_img = gravity_off
-
-                if event.key == pygame.K_z and last_object[-1] is not None:
-                    if last_object[-1] == 'particle':
-                        particle_group.remove(particle_group.sprites()[-1])
-                        last_object.pop()
-
-                    elif last_object[-1] == 'spring':
-                        spring_group.remove(spring_group.sprites()[-1])
-                        last_object.pop()
-
-
-        screen.blit(self.gravity_img, (440, 540))
+                self.state_management(event)  # Manages different states
 
         spring_group.draw(screen)
         particle_group.draw(screen)
 
+        if self.running:
+            particle_group.update(gravity=self.gravity)
+            spring_group.update()
 
-    def connect_spring(self, particle_1, rod_mode=True):
-        
-        connected = False
+        if self.show_instructions:
+            self.instructions()
 
-        while not connected:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    quit()
+    def draw_spring_logic(self):
+        global fps
 
-                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    for particle_2 in particle_group:
-                        if particle_2.rect.collidepoint(pygame.mouse.get_pos()):
-                            if rod_mode:
-                                difference = np.linalg.norm(np.subtract(np.asarray(particle_1.center), np.asarray(particle_2.center)))
-                                new_spring = Spring(particle_1, particle_2, 10000, difference, gray)
-                            else:
-                                new_spring = Spring(particle_1, particle_2, self.k, self.lo)
+        draw_string_key = pygame.mouse.get_pressed()[0]
 
-                            spring_group.add(new_spring)
-                            connected = True
+        if draw_string_key and not self.drawing_string:
+            for particle in particle_group:
+                if particle.rect.collidepoint(pygame.mouse.get_pos()) and particle.mass > 10000:
+                    fps = 300
+                    self.drawing_string = True
+                    self.blocks.append(particle)
 
-                    connected = True
+        elif not draw_string_key and self.drawing_string:
+            fps = 60
+            found_block = False
+            for particle in particle_group:
+                if particle.rect.collidepoint(pygame.mouse.get_pos()) and particle != self.blocks[0]:
+                    found_block = True
+                    self.string_drawn = True
+                    self.blocks.append(particle)
 
-            # drawing
-            screen.fill(black)
-            screen.blit(ui, (0, 0))
-            screen.blit(unit, (40, 540))
-            screen.blit(self.gravity_img, (440, 540))
+            if not found_block:
+                self.string_points = []
 
-            if rod_mode:
-                line_color = gray
-            else:
-                line_color = white
+            self.drawing_string = False
 
-            draw_line(particle_1.rect.center, pygame.mouse.get_pos(), line_color)
-            
-            spring_group.draw(screen)
-            particle_group.draw(screen)
+        # Create spring model of string if drawn
+        if self.string_drawn:
+            self.set_string()
 
-            pygame.display.update()
-            clock.tick(60)
+        # Draws spring
+        for point in self.string_points:
+            pygame.draw.circle(screen, white, point, 2)
+
+        if self.drawing_string:
+            self.string_points.append(pygame.mouse.get_pos())
+
+    def set_string(self):  # Creates a string from string_points based on parameters once drawn
+        x_range = np.linspace(self.string_points[0][0], self.string_points[-1][0], self.objects_in_string)
+        spaced_string_points = []
+        for x in x_range:
+            spaced_string_points.append(punto_mas_proximo(x, self.string_points))
+
+        self.string_points = spaced_string_points
+
+        # Create masses
+        masses = [self.blocks[0]]
+        for point in self.string_points:
+            masses.append(Particle(point, self.density))
+
+        masses.append(self.blocks[-1])
+
+        # Connect them with springs
+        springs = []
+        k = self.initial_tension / ((x_range[1] - x_range[0]) * self.pixel_meter_ratio)
+        if k > 3000:  # Mas alla de 3000 empieza a romperse numpy y otras cosas que ni idea
+            k = 3000
+
+        for i in range(len(masses) - 1):
+            springs.append(Spring(masses[i], masses[i + 1], k, 0))
+
+        for i in range(len(masses)):
+            particle_group.add(masses[i])
+            if i < len(springs):
+                spring_group.add(springs[i])
+
+        self.string_drawn = False
+        self.string_points = []
+        self.blocks = []
+
+    def set_spring(self):
+        # Connects one mass with another using a spring
+        particle_1 = self.spring_particle
+        is_clicking = pygame.mouse.get_pressed()[0]
+
+        for particle_2 in particle_group:
+            if particle_2.rect.collidepoint(pygame.mouse.get_pos()) and is_clicking:
+                if pygame.key.get_pressed()[pygame.K_r]:  # rod mode
+                    difference = np.linalg.norm(np.subtract(np.asarray(particle_1.center), np.asarray(particle_2.center)))
+                    rod_approx_constant = min(particle_1.mass, particle_2.mass) * 3400
+                    new_spring = Spring(particle_1, particle_2, rod_approx_constant, difference, color=gray)
+                else:
+                    new_spring = Spring(particle_1, particle_2, self.spring_constant, 0)
+
+                self.setting_spring = False
+                self.spring_particle = None
+                spring_group.add(new_spring)
+
+                break
+
+        # Draws spring
+        draw_line(screen, particle_1.rect.center, pygame.mouse.get_pos(), white)
+
+    def state_management(self, event):
+        # Run simulation
+        if event.key == pygame.K_RETURN:
+            self.running = not self.running
+
+        # Resets current objects
+        if event.key == pygame.K_BACKSPACE:
+            particle_group.empty()
+            spring_group.empty()
+            self.blocks = []
+
+        if event.key == pygame.K_i:
+            self.show_instructions = not self.show_instructions
+            self.instructions_position = 600
+
+        if event.key == pygame.K_g:
+            self.gravity = not self.gravity
+
+    def object_creation_management(self, event):
+        if event.button == 1:  # Creates a particle
+            avoid_creating = False
+            for particle in particle_group:  # Doesn't create a particle if it's on top of another
+                if particle.rect.collidepoint(pygame.mouse.get_pos()):
+                    avoid_creating = True
+
+            if not avoid_creating:
+                new_particle = Particle(pygame.mouse.get_pos(), self.mass, radius=7)
+                particle_group.add(new_particle)
+
+        # Creates an unmovable particle
+        if event.button == 2:
+            new_particle = Block(pygame.mouse.get_pos())
+            particle_group.add(new_particle)
+
+        if event.button == 3:
+            for particle in particle_group:
+                if particle.rect.collidepoint(pygame.mouse.get_pos()):
+                    self.setting_spring = True
+                    self.spring_particle = particle
+
+    def draw_states(self):
+        if self.running:
+            screen.blit(on, (740, 9))
+        else:
+            screen.blit(off, (740, 9))
+
+        if self.gravity:
+            screen.blit(on, (730, 560))
+        else:
+            screen.blit(off, (730, 560))
+
+    def instructions(self):  # Involves animation
+        y_top = 80
+        speed = -40
+
+        screen.blit(instructions, (200, self.instructions_position))
+
+        if self.instructions_position > y_top:
+            self.instructions_position += speed
 
 
-    def run(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
-
-            if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_RETURN):
-                self.state = "set up"
-
-        # drawing
-        screen.fill(black)
-        screen.blit(ui, (0, 0))
-        screen.blit(unit, (40, 540))
-        screen.blit(self.gravity_img, (440, 540))
-
-        spring_group.draw(screen)
-        particle_group.draw(screen)
-
-        particle_group.update(self.gravity)
-        spring_group.update()
-
-
-# General setup
+# General Setup
 pygame.init()
 clock = pygame.time.Clock()
+fps = 60
+
+# Game screen
+screen_width = 800
+screen_height = 600
+screen = pygame.display.set_mode((screen_width, screen_height))
 
 # Images and variables
 black = (0, 0, 0)
 white = (255, 255, 255)
 gray = (93, 93, 93)
 
-ui = pygame.image.load(".\\Assets\\ui.png")
-unit = pygame.image.load(".\\Assets\\unit.png")
-gravity_off = pygame.image.load(".\\Assets\\g_off.png")
-gravity_on = pygame.image.load(".\\Assets\\g_on.png")
-
-last_object = [None]
-
-# Game screen
-screen_width = 600
-screen_height = 600
-screen = pygame.display.set_mode((screen_width, screen_height))
+background = pygame.image.load('.\\Assets\\background.png').convert_alpha()
+instructions = pygame.image.load('.\\Assets\\instructions.png').convert_alpha()
+on = pygame.image.load('.\\Assets\\on.png').convert_alpha()
+off = pygame.image.load('.\\Assets\\off.png').convert_alpha()
 
 # Objects
 particle_group = pygame.sprite.Group()
 spring_group = pygame.sprite.Group()
-wall_group = pygame.sprite.Group()
 
-game = GameManger()
-instructions = Instructions()
-settings = Settings()
+game = GameManager()
 
 while True:
-    # drawing
     screen.fill(black)
-    screen.blit(ui, (0, 0))
-    screen.blit(unit, (40, 540))
+    screen.blit(background, (0, 0))
 
-    # Selecting proper game state
-    game.state_manager()
+    game.game_loop()
 
-    # Updating
     pygame.display.update()
-    clock.tick(60)
+    clock.tick(fps)
