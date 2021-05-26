@@ -12,7 +12,7 @@ class Particle(pygame.sprite.Sprite):
         super().__init__()
 
         # Useful attributes
-        self.mass = int(mass)
+        self.mass = mass
         self.center = center
         self.acceleration = np.array([0, 0])
         self.speed = np.array(velocity)
