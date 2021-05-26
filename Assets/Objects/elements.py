@@ -79,7 +79,7 @@ class Spring(pygame.sprite.Sprite):
     def __init__(self, node1, node2, k, lo, color=white):
         super().__init__()
 
-        self.k = int(k)
+        self.k = k
         self.lo = int(lo)
 
         self.node1 = node1

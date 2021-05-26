@@ -1,7 +1,8 @@
 import pygame
 
-# TODO: agarrar la casilla verdadera sin aproximar la aproximacion lol
+white = (255, 255, 255)
 
+# TODO: agarrar la casilla verdadera sin aproximar la aproximacion lol
 def punto_mas_proximo(valor, lista):  # Variacion de binary search
     # Sortea la lista de menor a mayor de ser necesario
     if lista[0][0] > lista[-1][0]:
@@ -33,3 +34,7 @@ def block_selection(block_list):  # Returns first_block, last_block
         return block_list[-1], block_list[0]
     else:
         return block_list[0], block_list[-1]
+
+def draw_text(font, screen, text, location):
+    text_surface = font.render(text, False, white)
+    screen.blit(text_surface, location)

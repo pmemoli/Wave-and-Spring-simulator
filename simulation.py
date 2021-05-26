@@ -4,12 +4,13 @@ from Assets.Objects.utilities import *
 class Simulation:
     def __init__(self):
         # State variables
-        self.state = "set up"
         self.running = False
         self.show_instructions = False
         self.instructions_position = 600
         self.show_parameters = False
         self.parameters_position = 600
+        self.fps = 60
+        self.parameter_selection_fps = 60
 
         # General physical variables
         self.pixel_meter_ratio = 1/30  # meter/pixel
@@ -75,25 +76,27 @@ class Simulation:
                 self.parameters()
                 self.instructions_position = 600
                 self.show_instructions = False
+                self.parameters_management()
 
             # Displaying
             pygame.display.update()
-            clock.tick(fps)
+            if self.show_parameters:
+                clock.tick(self.parameter_selection_fps)
+            else:
+                clock.tick(self.fps)
 
     def draw_spring_logic(self):
-        global fps
-
         draw_string_key = pygame.mouse.get_pressed()[0]
 
         if draw_string_key and not self.drawing_string:
             for particle in particle_group:
                 if particle.rect.collidepoint(pygame.mouse.get_pos()) and particle.mass > 10000:
-                    fps = 300
+                    self.fps *= 5
                     self.drawing_string = True
                     self.blocks.append(particle)
 
         elif not draw_string_key and self.drawing_string:
-            fps = 60
+            self.fps /= 5
             found_block = False
             for particle in particle_group:
                 if particle.rect.collidepoint(pygame.mouse.get_pos()) and particle != self.blocks[0]:
@@ -103,6 +106,7 @@ class Simulation:
 
             if not found_block:
                 self.string_points = []
+                self.blocks = []
 
             self.drawing_string = False
 
@@ -250,11 +254,51 @@ class Simulation:
 
         if self.parameters_position > y_top:
             self.parameters_position += speed
+        else:
+            draw_text(parameter_font, screen, str(round(self.mass, 2)) + " kg", (470, 201))  # Mass
+            draw_text(parameter_font, screen, str(round(self.spring_constant, 2)), (490, 240))  # Spring Constant
+            draw_text(parameter_font, screen, str(self.string_mass) + " kg", (450, 280))  # String Mass
+            draw_text(parameter_font, screen, str(self.initial_tension) + " N", (495, 318))  # Equilibrium tension
+            draw_text(parameter_font, screen, str(self.objects_in_string), (460, 380))  # Particles per string
+            draw_text(parameter_font, screen, "x " + str(round(self.fps/60, 3)), (440, 418))  # Animation seconds/simulation seconds
+
+    def parameters_management(self):
+        if pygame.key.get_pressed()[pygame.K_t] and self.mass - 0.06 > 0:
+            self.mass -= 0.06
+        elif pygame.key.get_pressed()[pygame.K_y]:
+            self.mass += 0.06
+
+        if pygame.key.get_pressed()[pygame.K_a] and self.spring_constant - 0.06 > 0:
+            self.spring_constant -= 0.06
+        elif pygame.key.get_pressed()[pygame.K_s]:
+            self.spring_constant += 0.06
+
+        if pygame.key.get_pressed()[pygame.K_z] and self.string_mass - 1 > 0:
+            self.string_mass -= 1
+        elif pygame.key.get_pressed()[pygame.K_x]:
+            self.string_mass += 1
+
+        if pygame.key.get_pressed()[pygame.K_e] and self.initial_tension - 1 > 10:
+            self.initial_tension -= 1
+        elif pygame.key.get_pressed()[pygame.K_r]:
+            self.initial_tension += 1
+
+        if pygame.key.get_pressed()[pygame.K_d] and self.objects_in_string - 1 > 2:
+            self.objects_in_string -= 1
+        elif pygame.key.get_pressed()[pygame.K_f]:
+            self.objects_in_string += 1
+
+        if pygame.key.get_pressed()[pygame.K_c] and self.fps - 1 > 10:
+            self.fps -= 1
+        elif pygame.key.get_pressed()[pygame.K_v]:
+            self.fps += 1
+
 
 # General Setup
 pygame.init()
+pygame.font.init()
 clock = pygame.time.Clock()
-fps = 60
+parameter_font = pygame.font.Font('.\\Assets\\ReemKufi.ttf', 22)
 
 # Game screen
 screen_width = 800
@@ -266,11 +310,11 @@ black = (0, 0, 0)
 white = (255, 255, 255)
 gray = (93, 93, 93)
 
-background = pygame.image.load('.\\Assets\\background.png').convert_alpha()
-instructions = pygame.image.load('.\\Assets\\instructions.png').convert_alpha()
-parameters = pygame.image.load('.\\Assets\\parameters.png').convert_alpha()
-on = pygame.image.load('.\\Assets\\on.png').convert_alpha()
-off = pygame.image.load('.\\Assets\\off.png').convert_alpha()
+background = pygame.image.load('.\\Assets\\Images\\en\\background.png').convert_alpha()
+instructions = pygame.image.load('.\\Assets\\Images\\en\\instructions.png').convert_alpha()
+parameters = pygame.image.load('.\\Assets\\Images\\en\\parameters.png').convert_alpha()
+on = pygame.image.load('.\\Assets\\Images\\en\\on.png').convert_alpha()
+off = pygame.image.load('.\\Assets\\Images\\en\\off.png').convert_alpha()
 
 # Objects
 particle_group = pygame.sprite.Group()
@@ -279,4 +323,3 @@ spring_group = pygame.sprite.Group()
 simulation = Simulation()
 
 simulation.run()
-
