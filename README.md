@@ -5,4 +5,7 @@ Describa cualquier configuracion de resortes, particulas, pendulos y ondas/sogas
 
 Pygame and Numpy required
 
-Note about evolution speed: It is calculated as fps / 60, with 60 fps being used as a real second. Backspace deletes current configuration
+Notes: Evolution speed is calculated as fps / 60, with 60 fps being used as a real simulation second. Tension withing masses of a string is
+not allowed to exceed its mass * 3000 since numpy breaks for some reason.
+
+Backspace deletes current configuration
